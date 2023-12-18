@@ -1,8 +1,15 @@
 from django.db import models
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.contrib.auth.models import User
 
 # Create your models here.
+class ArticlePublishedManager(models.Manager):
+    def get_queryset(self) -> QuerySet:
+        return super().get_queryset().filter(status=Article.Status.PUBLISHED)
+        pass
+    pass
+
 
 class Article(models.Model):
 
@@ -18,6 +25,9 @@ class Article(models.Model):
     created=models.DateTimeField(auto_now_add=True)
     updated=models.DateTimeField(auto_now=True)
     status=models.CharField(max_length=2,choices=Status.choices,default=Status.DRAFT)
+
+    objects=models.Manager()#The default manager
+    publishedArticles=ArticlePublishedManager()#the custom manager
 
     class Meta:
         ordering=['-publish']
