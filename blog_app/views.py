@@ -5,9 +5,10 @@ from django.shortcuts import render , get_object_or_404
 from django.http import Http404 
 from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 from django.views.decorators.http import require_POST
-from .forms import CommentForm
+from .forms import CommentForm ,SearchForm
 from django.db.models import Count
 from taggit.models import Tag
+
 # Create your views here.
 def list_of_articles(request,tag_slug=None):
     articles=Article.publishedArticles.all()
@@ -75,3 +76,23 @@ def comment_for_article(request, article_id):
 
     pass
 
+def article_search(request):
+    form = SearchForm()
+    query = None
+    results = []
+
+    if 'query' in request.GET:
+        
+        form = SearchForm(request.GET)
+        if form.is_valid():
+            query = form.cleaned_data['query']
+            results = Article.objects.raw("SELECT * FROM blog_app_article WHERE MATCH (title, body) AGAINST (%s)", [query])
+            pass
+        pass
+    
+    return render(request,
+            'blog_app/search.html',
+            {'form': form, 'query': query,'results': results}
+        )
+
+    pass
