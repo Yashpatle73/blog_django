@@ -6,12 +6,16 @@ from django.http import Http404
 from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 from django.views.decorators.http import require_POST
 from .forms import CommentForm
+from taggit.models import Tag
 # Create your views here.
-def list_of_articles(request):
+def list_of_articles(request,tag_slug=None):
     articles=Article.publishedArticles.all()
     #print(artcles)
     paginator=Paginator(articles,3)
     page_number=request.GET.get('page',1)
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        articles = articles.filter(tags__in=[tag])
     try:
         articles=paginator.page(page_number)
     except EmptyPage:
@@ -37,7 +41,7 @@ def article_details(request,year,month,day,article):
     except Article.DoesNotExist:
         raise Http404("No Article Found")
     
-    return render (request , 'blog_app/detail.html',{'article':article})
+    return render (request , 'blog_app/detail.html',{'article':article,'comments':comments,'form':form})
     pass
 
 @require_POST
