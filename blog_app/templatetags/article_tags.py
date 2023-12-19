@@ -1,5 +1,6 @@
 from django import template
 from ..models import Article
+from django.db.models import Count
 
 
 register =template.Library()
@@ -18,3 +19,11 @@ def show_latest_articles(count=3):
     pass
 
 
+@register.inclusion_tag('blog_app/most_commented_articles.html')
+def show_most_commented_articles(count=3):
+    most_commented_articles = Article.publishedArticles.annotate(
+                                    total_comments=Count('comments')
+                                ).order_by('-total_comments')[:count]
+                                
+    return {'most_commented_articles' : most_commented_articles}
+    pass
